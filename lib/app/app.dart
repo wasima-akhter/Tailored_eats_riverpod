@@ -15,11 +15,12 @@ class App extends ConsumerWidget {
       minTextAdapt: true,
       splitScreenMode: true,
       builder: (context, child) {
+        final router = ref.watch(appRouterProvider);
         return MaterialApp.router(
           debugShowCheckedModeBanner: false,
           title: 'Tailored Eats',
           theme: AppTheme.light,
-          routerConfig: appRouter,
+          routerConfig: router,
         );
       },
     );

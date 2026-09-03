@@ -4,13 +4,24 @@ abstract final class AppRoutes {
   static const onboarding = '/onboarding';
 
   static const login = '/login';
+
   static const signup = '/signup';
+
+  static const emailVerification = '/email-verification';
+
+  static const forgotPassword = '/forgot-password';
+  static const forgotPasswordOtp = '/forgot-password-otp';
+  static const resetPassword = '/reset-password';
 
   static const main = '/main';
 
   static const home = '/home';
+
   static const meals = '/meals';
+
   static const progress = '/progress';
+
   static const friends = '/friends';
+
   static const profile = '/profile';
 }

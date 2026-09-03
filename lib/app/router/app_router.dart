@@ -1,92 +1,222 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
-import '../../features/onboarding/presentation/screens/onboarding_screen.dart';
-import '../../features/splash/presentation/screens/splash_screen.dart';
+import '../../features/authentication/presentation/controllers/auth_controller.dart';
+import '../../features/authentication/presentation/controllers/auth_state.dart';
+import '../../features/authentication/presentation/screens/email_verification_screen.dart';
+import '../../features/authentication/presentation/screens/forgot_password_otp_screen.dart';
+import '../../features/authentication/presentation/screens/forgot_password_screen.dart';
+import '../../features/authentication/presentation/screens/login_screen.dart';
+import '../../features/authentication/presentation/screens/register_screen.dart';
+import '../../features/authentication/presentation/screens/reset_password_screen.dart';
+import '../../features/entry/onboarding/presentation/screens/onboarding_screen.dart';
+import '../../features/entry/splash/presentation/screens/splash_screen.dart';
+import 'app_router_provider.dart';
 import 'route_paths.dart';
 
-final GoRouter appRouter = GoRouter(
-  initialLocation: AppRoutes.splash,
+GoRouter createAppRouter(Ref ref) {
+  final refreshNotifier = ref.watch(authRouterRefreshNotifierProvider);
 
-  routes: [
-    GoRoute(
-      path: AppRoutes.splash,
-      name: 'splash',
-      builder: (context, state) {
-        return const SplashScreen();
-      },
-    ),
+  return GoRouter(
+    initialLocation: AppRoutes.splash,
 
-    GoRoute(
-      path: AppRoutes.onboarding,
-      name: 'onboarding',
-      builder: (context, state) {
-        return const OnboardingScreen();
-      },
-    ),
+    refreshListenable: refreshNotifier,
 
-    GoRoute(
-      path: AppRoutes.login,
-      name: 'login',
-      builder: (context, state) {
-        return const Placeholder();
-      },
-    ),
+    redirect: (context, state) {
+      final authState = ref.read(authControllerProvider);
 
-    GoRoute(
-      path: AppRoutes.signup,
-      name: 'signup',
-      builder: (context, state) {
-        return const Placeholder();
-      },
-    ),
+      final location = state.matchedLocation;
 
-    GoRoute(
-      path: AppRoutes.main,
-      name: 'main',
-      builder: (context, state) {
-        return const Placeholder();
-      },
-    ),
+      final isAuthenticated = authState.isAuthenticated;
 
-    GoRoute(
-      path: AppRoutes.home,
-      name: 'home',
-      builder: (context, state) {
-        return const Placeholder();
-      },
-    ),
+      final isAuthRoute =
+          location == AppRoutes.login || location == AppRoutes.signup;
 
-    GoRoute(
-      path: AppRoutes.meals,
-      name: 'meals',
-      builder: (context, state) {
-        return const Placeholder();
-      },
-    ),
+      final isPasswordResetRoute =
+          location == AppRoutes.forgotPassword ||
+          location == AppRoutes.forgotPasswordOtp ||
+          location == AppRoutes.resetPassword;
 
-    GoRoute(
-      path: AppRoutes.progress,
-      name: 'progress',
-      builder: (context, state) {
-        return const Placeholder();
-      },
-    ),
+      final isEmailVerificationRoute = location == AppRoutes.emailVerification;
 
-    GoRoute(
-      path: AppRoutes.friends,
-      name: 'friends',
-      builder: (context, state) {
-        return const Placeholder();
-      },
-    ),
+      final isSplashRoute = location == AppRoutes.splash;
 
-    GoRoute(
-      path: AppRoutes.profile,
-      name: 'profile',
-      builder: (context, state) {
-        return const Placeholder();
-      },
-    ),
-  ],
-);
+      if (authState.status == AuthStatus.initial ||
+          authState.status == AuthStatus.loading) {
+        return isSplashRoute ? null : AppRoutes.splash;
+      }
+
+      if (!isAuthenticated) {
+        if (isAuthRoute ||
+            isPasswordResetRoute ||
+            isEmailVerificationRoute ||
+            isSplashRoute) {
+          return null;
+        }
+
+        return AppRoutes.login;
+      }
+
+      if (isAuthenticated) {
+        if (isAuthRoute ||
+            isPasswordResetRoute ||
+            isEmailVerificationRoute ||
+            isSplashRoute) {
+          return AppRoutes.main;
+        }
+      }
+
+      return null;
+    },
+
+    routes: [
+      GoRoute(
+        path: AppRoutes.splash,
+        name: AppRoutes.splash,
+        builder: (context, state) {
+          return const SplashScreen();
+        },
+      ),
+
+      GoRoute(
+        path: AppRoutes.onboarding,
+        name: AppRoutes.onboarding,
+        builder: (context, state) {
+          return const OnboardingScreen();
+        },
+      ),
+
+      GoRoute(
+        path: AppRoutes.login,
+        name: AppRoutes.login,
+        builder: (context, state) {
+          return const LoginScreen();
+        },
+      ),
+
+      GoRoute(
+        path: AppRoutes.signup,
+        name: AppRoutes.signup,
+        builder: (context, state) {
+          return const RegisterScreen();
+        },
+      ),
+
+      GoRoute(
+        path: AppRoutes.emailVerification,
+        name: AppRoutes.emailVerification,
+        builder: (context, state) {
+          final email = state.extra as String?;
+
+          if (email == null || email.isEmpty) {
+            return const LoginScreen();
+          }
+
+          return EmailVerificationScreen(email: email);
+        },
+      ),
+
+      GoRoute(
+        path: AppRoutes.forgotPassword,
+        name: AppRoutes.forgotPassword,
+        builder: (context, state) {
+          return const ForgotPasswordScreen();
+        },
+      ),
+
+      GoRoute(
+        path: AppRoutes.forgotPasswordOtp,
+        name: AppRoutes.forgotPasswordOtp,
+        builder: (context, state) {
+          final email = state.extra as String?;
+
+          if (email == null || email.isEmpty) {
+            return const ForgotPasswordScreen();
+          }
+
+          return ForgotPasswordOtpScreen(email: email);
+        },
+      ),
+
+      GoRoute(
+        path: AppRoutes.resetPassword,
+        name: AppRoutes.resetPassword,
+        builder: (context, state) {
+          final extra = state.extra;
+
+          if (extra is! Map<String, dynamic>) {
+            return const ForgotPasswordScreen();
+          }
+
+          final email = extra['email'] as String?;
+          final activationToken = extra['activationToken'] as String?;
+
+          if (email == null ||
+              email.isEmpty ||
+              activationToken == null ||
+              activationToken.isEmpty) {
+            return const ForgotPasswordScreen();
+          }
+
+          return ResetPasswordScreen(
+            email: email,
+            activationToken: activationToken,
+          );
+        },
+      ),
+
+      GoRoute(
+        path: AppRoutes.main,
+        name: AppRoutes.main,
+        builder: (context, state) {
+          return const Placeholder();
+        },
+      ),
+
+      GoRoute(
+        path: AppRoutes.home,
+        name: AppRoutes.home,
+        builder: (context, state) {
+          return const Placeholder();
+        },
+      ),
+
+      GoRoute(
+        path: AppRoutes.meals,
+        name: AppRoutes.meals,
+        builder: (context, state) {
+          return const Placeholder();
+        },
+      ),
+
+      GoRoute(
+        path: AppRoutes.progress,
+        name: AppRoutes.progress,
+        builder: (context, state) {
+          return const Placeholder();
+        },
+      ),
+
+      GoRoute(
+        path: AppRoutes.friends,
+        name: AppRoutes.friends,
+        builder: (context, state) {
+          return const Placeholder();
+        },
+      ),
+
+      GoRoute(
+        path: AppRoutes.profile,
+        name: AppRoutes.profile,
+        builder: (context, state) {
+          return const Placeholder();
+        },
+      ),
+    ],
+  );
+}
+
+final appRouterProvider = Provider<GoRouter>((ref) {
+  return createAppRouter(ref);
+});

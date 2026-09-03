@@ -9,6 +9,11 @@ abstract final class AppTheme {
       useMaterial3: true,
       brightness: Brightness.light,
 
+      // ----------------------------------------------------------
+      // Font
+      // ----------------------------------------------------------
+      fontFamily: 'Manrope',
+
       scaffoldBackgroundColor: AppColors.background,
 
       colorScheme: ColorScheme.fromSeed(
@@ -16,14 +21,41 @@ abstract final class AppTheme {
         brightness: Brightness.light,
       ),
 
-      textTheme: const TextTheme(
-        displayLarge: AppTextStyles.heading1,
-        displayMedium: AppTextStyles.heading2,
-        displaySmall: AppTextStyles.heading3,
+      textTheme: TextTheme(
+        // ----------------------------------------------------------
+        // Display
+        // ----------------------------------------------------------
+        displayLarge: AppTextStyles.displayLarge,
+        displayMedium: AppTextStyles.displayMedium,
+        displaySmall: AppTextStyles.displaySmall,
+
+        // ----------------------------------------------------------
+        // Headlines
+        // ----------------------------------------------------------
+        headlineLarge: AppTextStyles.headlineLarge,
+        headlineMedium: AppTextStyles.headlineMedium,
+        headlineSmall: AppTextStyles.headlineSmall,
+
+        // ----------------------------------------------------------
+        // Titles
+        // ----------------------------------------------------------
+        titleLarge: AppTextStyles.titleLarge,
+        titleMedium: AppTextStyles.titleMedium,
+        titleSmall: AppTextStyles.titleSmall,
+
+        // ----------------------------------------------------------
+        // Body
+        // ----------------------------------------------------------
         bodyLarge: AppTextStyles.bodyLarge,
         bodyMedium: AppTextStyles.bodyMedium,
         bodySmall: AppTextStyles.bodySmall,
-        labelLarge: AppTextStyles.label,
+
+        // ----------------------------------------------------------
+        // Labels
+        // ----------------------------------------------------------
+        labelLarge: AppTextStyles.labelLarge,
+        labelMedium: AppTextStyles.labelMedium,
+        labelSmall: AppTextStyles.labelSmall,
       ),
 
       appBarTheme: const AppBarTheme(
@@ -42,17 +74,14 @@ abstract final class AppTheme {
       inputDecorationTheme: InputDecorationTheme(
         filled: true,
         fillColor: AppColors.surface,
-
         border: OutlineInputBorder(
           borderRadius: BorderRadius.circular(12),
           borderSide: const BorderSide(color: AppColors.border),
         ),
-
         enabledBorder: OutlineInputBorder(
           borderRadius: BorderRadius.circular(12),
           borderSide: const BorderSide(color: AppColors.border),
         ),
-
         focusedBorder: OutlineInputBorder(
           borderRadius: BorderRadius.circular(12),
           borderSide: const BorderSide(color: AppColors.primary, width: 1.5),
@@ -87,6 +116,11 @@ abstract final class AppTheme {
       useMaterial3: true,
       brightness: Brightness.dark,
 
+      // ----------------------------------------------------------
+      // Font
+      // ----------------------------------------------------------
+      fontFamily: 'Manrope',
+
       colorScheme: ColorScheme.fromSeed(
         seedColor: AppColors.primary,
         brightness: Brightness.dark,
@@ -98,7 +132,6 @@ abstract final class AppTheme {
 
       inputDecorationTheme: InputDecorationTheme(
         filled: true,
-
         border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
       ),
 
@@ -110,6 +143,7 @@ abstract final class AppTheme {
           shape: RoundedRectangleBorder(
             borderRadius: BorderRadius.circular(12),
           ),
+          textStyle: AppTextStyles.button,
         ),
       ),
     );
