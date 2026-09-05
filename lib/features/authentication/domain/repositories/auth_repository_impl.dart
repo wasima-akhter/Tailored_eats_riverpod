@@ -67,11 +67,13 @@ class AuthRepositoryImpl implements AuthRepository {
 
   @override
   Future<void> resetPassword({
+    required String email,
     required String token,
     required String newPassword,
     required String confirmPassword,
   }) {
     return _remoteDataSource.resetPassword(
+      email: email,
       token: token,
       newPassword: newPassword,
       confirmPassword: confirmPassword,

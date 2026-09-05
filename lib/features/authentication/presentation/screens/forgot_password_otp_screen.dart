@@ -54,15 +54,20 @@ class _ForgotPasswordOtpScreenState
     ) {
       if (next.status == ForgotPasswordStatus.error &&
           next.errorMessage != null) {
-        ScaffoldMessenger.of(
-          context,
-        ).showSnackBar(SnackBar(content: Text(next.errorMessage!)));
+        // ScaffoldMessenger.of(
+        //   context,
+        // ).showSnackBar(SnackBar(content: Text(next.errorMessage!)));
 
+        debugPrint(next.errorMessage!);
         ref.read(forgotPasswordControllerProvider.notifier).clearError();
       }
 
       if (next.status == ForgotPasswordStatus.otpVerified &&
           next.activationToken != null) {
+        debugPrint('OTP VERIFIED');
+        debugPrint('EMAIL: ${widget.email}');
+        debugPrint('TOKEN RECEIVED: ${next.activationToken!.isNotEmpty}');
+
         context.goNamed(
           AppRoutes.resetPassword,
           extra: {
@@ -130,7 +135,7 @@ class _ForgotPasswordOtpScreenState
                   maxLength: 6,
                   textAlign: TextAlign.center,
                   decoration: const InputDecoration(
-                    hintText: 'Enter 6-digit code',
+                    hintText: 'Enter 4-digit code',
                     border: OutlineInputBorder(),
                     counterText: '',
                   ),
@@ -142,11 +147,11 @@ class _ForgotPasswordOtpScreenState
                       return 'Please enter the verification code.';
                     }
 
-                    if (otp.length != 6) {
-                      return 'Verification code must be 6 digits.';
+                    if (otp.length != 4) {
+                      return 'Verification code must be 4 digits.';
                     }
 
-                    if (!RegExp(r'^\d{6}$').hasMatch(otp)) {
+                    if (!RegExp(r'^\d{4}$').hasMatch(otp)) {
                       return 'Please enter a valid verification code.';
                     }
 

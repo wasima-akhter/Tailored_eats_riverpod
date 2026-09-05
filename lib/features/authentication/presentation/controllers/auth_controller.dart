@@ -1,3 +1,4 @@
+import 'package:flutter/cupertino.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../../../core/storage/storage_provider.dart';
@@ -41,8 +42,10 @@ class AuthController extends Notifier<AuthState> {
     } catch (error) {
       state = AuthState(
         status: AuthStatus.error,
-        errorMessage: error.toString(),
+        errorMessage: "Failed the following task, Please try again",
       );
+    } finally {
+      FocusManager.instance.primaryFocus?.unfocus();
     }
   }
 
@@ -68,8 +71,10 @@ class AuthController extends Notifier<AuthState> {
     } catch (error) {
       state = AuthState(
         status: AuthStatus.error,
-        errorMessage: error.toString(),
+        errorMessage: "Failed the following task, Please try again",
       );
+    } finally {
+      FocusManager.instance.primaryFocus?.unfocus();
     }
   }
 

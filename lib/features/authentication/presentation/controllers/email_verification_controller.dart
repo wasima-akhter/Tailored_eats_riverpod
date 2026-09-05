@@ -39,7 +39,7 @@ class EmailVerificationController extends Notifier<EmailVerificationState> {
       state = EmailVerificationState(
         status: EmailVerificationStatus.error,
         email: email,
-        errorMessage: error.toString(),
+        errorMessage: "Failed the following task, Please try again",
       );
     }
   }
@@ -69,7 +69,7 @@ class EmailVerificationController extends Notifier<EmailVerificationState> {
       state = EmailVerificationState(
         status: EmailVerificationStatus.error,
         email: email,
-        errorMessage: error.toString(),
+        errorMessage: "Failed the following task, Please try again",
       );
     }
   }

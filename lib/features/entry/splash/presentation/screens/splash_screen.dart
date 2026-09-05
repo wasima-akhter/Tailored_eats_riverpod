@@ -25,13 +25,9 @@ class _SplashScreenState extends ConsumerState<SplashScreen> {
   @override
   Widget build(BuildContext context) {
     ref.listen<SplashState>(splashControllerProvider, (previous, next) {
-      final route = next.nextRoute;
-
-      if (route == null || !mounted) {
-        return;
+      if (next.nextRoute != null && mounted) {
+        context.go(next.nextRoute!);
       }
-
-      context.go(route);
     });
 
     return Scaffold(

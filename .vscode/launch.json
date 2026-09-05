@@ -11,7 +11,7 @@
       "flutterMode": "debug",
       "args": [
         "--dart-define=ENVIRONMENT=development",
-        "--dart-define=API_BASE_URL=http://localhost:8002/api/v1"
+        "--dart-define=API_BASE_URL=https://jpb8m13w-8002.inc1.devtunnels.ms/api/v1"
       ]
     },
     {

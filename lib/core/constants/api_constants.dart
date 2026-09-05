@@ -16,6 +16,21 @@ abstract final class ApiConstants {
   static const String resetPassword = '/auth/reset-password';
 
   // ==============================
+  // Home
+  // ==============================
+
+  static const String userDetail = '/user/user-detail';
+
+  static const String userConsistencyDetails =
+      '/consistency/user-consistency-details';
+
+  static const String getAllGoal = '/goal/get-all-goal';
+
+  static const String addUserWeight = '/consistency/add-user-weight';
+
+  static const String markGoalCompleted = '/goal/mark-goal-completed';
+
+  // ==============================
   // User
   // ==============================
 

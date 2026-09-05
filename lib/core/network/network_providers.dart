@@ -3,6 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../app/config/app_config.dart';
 import '../storage/storage_provider.dart';
+import 'ai_dio_client.dart';
 import 'api_client.dart';
 import 'dio_client.dart';
 import 'interceptors/auth_interceptor.dart';
@@ -39,6 +40,16 @@ final dioClientProvider = Provider<DioClient>((ref) {
 /// Use this only when a lower-level Dio instance is specifically needed.
 final dioProvider = Provider<Dio>((ref) {
   return ref.watch(dioClientProvider).dio;
+});
+
+final aiDioClientProvider = Provider<AiDioClient>((ref) {
+  return AiDioClient(
+    config: ref.watch(appConfigProvider),
+    interceptors: [ref.watch(apiLogInterceptorProvider)],
+  );
+});
+final aiApiClientProvider = Provider<ApiClient>((ref) {
+  return ApiClient(ref.watch(aiDioClientProvider).dio);
 });
 
 /// Main API client.

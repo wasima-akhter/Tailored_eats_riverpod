@@ -17,9 +17,11 @@ abstract final class AppRoutes {
 
   static const home = '/home';
 
-  static const meals = '/meals';
+  static const nutrition = '/nutrition';
 
-  static const progress = '/progress';
+  static const goals = '/goals';
+
+  static const consistancy = '/consistancy';
 
   static const friends = '/friends';
 

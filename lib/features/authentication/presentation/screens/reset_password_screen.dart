@@ -48,6 +48,7 @@ class _ResetPasswordScreenState extends ConsumerState<ResetPasswordScreen> {
     ref
         .read(forgotPasswordControllerProvider.notifier)
         .resetPassword(
+          email: widget.email,
           token: widget.activationToken,
           newPassword: _passwordController.text,
           confirmPassword: _confirmPasswordController.text,

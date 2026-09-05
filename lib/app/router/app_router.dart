@@ -1,6 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
+import 'package:tailored_eats_riverpod/features/consistency/presentation/screens/consistency_screen.dart';
+import 'package:tailored_eats_riverpod/features/friends/presentation/screens/friends_screen.dart';
+import 'package:tailored_eats_riverpod/features/goals/presentation/screens/goals_screen.dart';
 
 import '../../features/authentication/presentation/controllers/auth_controller.dart';
 import '../../features/authentication/presentation/controllers/auth_state.dart';
@@ -12,6 +15,9 @@ import '../../features/authentication/presentation/screens/register_screen.dart'
 import '../../features/authentication/presentation/screens/reset_password_screen.dart';
 import '../../features/entry/onboarding/presentation/screens/onboarding_screen.dart';
 import '../../features/entry/splash/presentation/screens/splash_screen.dart';
+import '../../features/home/presentation/screens/home_screen.dart';
+import '../../features/navigation/presentation/screens/main_navigation_screen.dart';
+import '../../features/nutrition/presentation/screens/nutrition_screen.dart';
 import 'app_router_provider.dart';
 import 'route_paths.dart';
 
@@ -42,16 +48,23 @@ GoRouter createAppRouter(Ref ref) {
 
       final isSplashRoute = location == AppRoutes.splash;
 
+      // Let SplashController handle startup navigation for now.
+      if (isSplashRoute) {
+        return null;
+      }
+
+      // Until session restoration is implemented in 17.14,
+      // allow the startup flow to reach onboarding/auth screens.
       if (authState.status == AuthStatus.initial ||
           authState.status == AuthStatus.loading) {
-        return isSplashRoute ? null : AppRoutes.splash;
+        return null;
       }
 
       if (!isAuthenticated) {
         if (isAuthRoute ||
             isPasswordResetRoute ||
             isEmailVerificationRoute ||
-            isSplashRoute) {
+            location == AppRoutes.onboarding) {
           return null;
         }
 
@@ -62,14 +75,15 @@ GoRouter createAppRouter(Ref ref) {
         if (isAuthRoute ||
             isPasswordResetRoute ||
             isEmailVerificationRoute ||
+            location == AppRoutes.onboarding ||
             isSplashRoute) {
-          return AppRoutes.main;
+          // return AppRoutes.main;
+          return AppRoutes.home;
         }
       }
 
       return null;
     },
-
     routes: [
       GoRoute(
         path: AppRoutes.splash,
@@ -166,44 +180,76 @@ GoRouter createAppRouter(Ref ref) {
         },
       ),
 
-      GoRoute(
-        path: AppRoutes.main,
-        name: AppRoutes.main,
-        builder: (context, state) {
-          return const Placeholder();
-        },
-      ),
+      StatefulShellRoute.indexedStack(
+        builder:
+            (
+              BuildContext context,
+              GoRouterState state,
+              StatefulNavigationShell navigationShell,
+            ) {
+              return MainNavigationScreen(navigationShell: navigationShell);
+            },
+        branches: [
+          StatefulShellBranch(
+            routes: [
+              GoRoute(
+                path: AppRoutes.home,
+                name: AppRoutes.home,
+                builder: (context, state) {
+                  return const HomeScreen();
+                },
+              ),
+            ],
+          ),
 
-      GoRoute(
-        path: AppRoutes.home,
-        name: AppRoutes.home,
-        builder: (context, state) {
-          return const Placeholder();
-        },
-      ),
+          StatefulShellBranch(
+            routes: [
+              GoRoute(
+                path: AppRoutes.nutrition,
+                name: AppRoutes.nutrition,
+                builder: (context, state) {
+                  return const NutritionScreen();
+                },
+              ),
+            ],
+          ),
 
-      GoRoute(
-        path: AppRoutes.meals,
-        name: AppRoutes.meals,
-        builder: (context, state) {
-          return const Placeholder();
-        },
-      ),
+          StatefulShellBranch(
+            routes: [
+              GoRoute(
+                path: AppRoutes.goals,
+                name: AppRoutes.goals,
+                builder: (context, state) {
+                  return const GoalsScreen();
+                },
+              ),
+            ],
+          ),
 
-      GoRoute(
-        path: AppRoutes.progress,
-        name: AppRoutes.progress,
-        builder: (context, state) {
-          return const Placeholder();
-        },
-      ),
+          StatefulShellBranch(
+            routes: [
+              GoRoute(
+                path: AppRoutes.consistancy,
+                name: AppRoutes.consistancy,
+                builder: (context, state) {
+                  return const ConsistencyScreen();
+                },
+              ),
+            ],
+          ),
 
-      GoRoute(
-        path: AppRoutes.friends,
-        name: AppRoutes.friends,
-        builder: (context, state) {
-          return const Placeholder();
-        },
+          StatefulShellBranch(
+            routes: [
+              GoRoute(
+                path: AppRoutes.friends,
+                name: AppRoutes.friends,
+                builder: (context, state) {
+                  return const FriendsScreen();
+                },
+              ),
+            ],
+          ),
+        ],
       ),
 
       GoRoute(

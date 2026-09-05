@@ -28,6 +28,9 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
 
     _emailController = TextEditingController();
     _passwordController = TextEditingController();
+
+    _emailController.text = "abc@yopmail.com";
+    _passwordController.text = "12345678";
   }
 
   @override
@@ -51,28 +54,6 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
           email: _emailController.text.trim(),
           password: _passwordController.text,
         );
-  }
-
-  void _listenToAuthState() {
-    ref.listenManual<AuthState>(authControllerProvider, (previous, next) {
-      if (!mounted) {
-        return;
-      }
-
-      if (next.status == AuthStatus.error && next.errorMessage != null) {
-        ScaffoldMessenger.of(
-          context,
-        ).showSnackBar(SnackBar(content: Text(next.errorMessage!)));
-      }
-
-      if (next.status == AuthStatus.authenticated) {
-        ScaffoldMessenger.of(
-          context,
-        ).showSnackBar(const SnackBar(content: Text('Login successful')));
-
-        // Navigation will be handled by GoRouter in 17.12.
-      }
-    });
   }
 
   @override
@@ -196,6 +177,22 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                 ),
 
                 SizedBox(height: 24.h),
+
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.end,
+                  children: [
+                    TextButton(
+                      onPressed: authState.isLoading
+                          ? null
+                          : () {
+                              context.pushNamed(AppRoutes.forgotPassword);
+                            },
+                      child: const Text('Forgot Password'),
+                    ),
+                  ],
+                ),
+
+                SizedBox(height: 14.h),
 
                 Row(
                   mainAxisAlignment: MainAxisAlignment.center,

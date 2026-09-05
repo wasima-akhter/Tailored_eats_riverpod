@@ -6,11 +6,13 @@ class AppConfig {
     required this.environment,
     required this.flavor,
     required this.baseUrl,
+    required this.aiBaseUrl,
   });
 
   final Environment environment;
   final Flavor flavor;
   final String baseUrl;
+  final String aiBaseUrl;
 
   static const String _environment = String.fromEnvironment(
     'ENVIRONMENT',
@@ -19,8 +21,13 @@ class AppConfig {
 
   static const String _apiBaseUrl = String.fromEnvironment(
     'API_BASE_URL',
-    defaultValue: 'http://localhost:8002/api/v1',
+    defaultValue: 'https://jpb8m13w-8002.inc1.devtunnels.ms/api/v1',
   );
+
+  static const String _aiBaseUrl = String.fromEnvironment(
+    'AI_BASE_URL',
+    defaultValue: 'https://5fvxbpgr-8000.inc1.devtunnels.ms',
+  ); // when change, run:  --dart-define=AI_BASE_URL=https://your-ai-production-url
 
   static AppConfig get current {
     final environment = Environment.fromString(_environment);
@@ -29,6 +36,7 @@ class AppConfig {
       environment: environment,
       flavor: _flavorFromEnvironment(environment),
       baseUrl: _apiBaseUrl,
+      aiBaseUrl: _aiBaseUrl,
     );
   }
 

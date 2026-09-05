@@ -30,6 +30,7 @@ abstract class AuthRemoteDataSource {
   });
 
   Future<void> resetPassword({
+    required String email,
     required String token,
     required String newPassword,
     required String confirmPassword,
@@ -97,7 +98,7 @@ class AuthRemoteDataSourceImpl implements AuthRemoteDataSource {
   }) async {
     final response = await _apiClient.post<Map<String, dynamic>>(
       ApiConstants.checkEmailOtp,
-      data: {'email': email, 'otp': otp},
+      data: {'email': email, 'code': otp},
     );
 
     final data = response.data?['data'] as Map<String, dynamic>?;
@@ -120,7 +121,7 @@ class AuthRemoteDataSourceImpl implements AuthRemoteDataSource {
   }) async {
     final response = await _apiClient.post<Map<String, dynamic>>(
       ApiConstants.checkForgotPasswordOtp,
-      data: {'email': email, 'otp': otp},
+      data: {'email': email, 'code': otp},
     );
 
     return ForgotPasswordOtpResponseModel.fromJson(response.data!);
@@ -128,6 +129,7 @@ class AuthRemoteDataSourceImpl implements AuthRemoteDataSource {
 
   @override
   Future<void> resetPassword({
+    required String email,
     required String token,
     required String newPassword,
     required String confirmPassword,
@@ -135,6 +137,7 @@ class AuthRemoteDataSourceImpl implements AuthRemoteDataSource {
     await _apiClient.patch<Map<String, dynamic>>(
       ApiConstants.resetPassword,
       data: {
+        'email': email,
         'token': token,
         'newPassword': newPassword,
         'confirmPassword': confirmPassword,

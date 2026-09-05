@@ -28,11 +28,17 @@ class ApiClient {
     Options? options,
     CancelToken? cancelToken,
   }) {
+    final callerStackTrace = StackTrace.current;
+
+    final requestOptions = options?.copyWith(
+      extra: {...?options.extra, 'callerStackTrace': callerStackTrace},
+    );
+
     return _dio.post<T>(
       path,
       data: data,
       queryParameters: queryParameters,
-      options: options,
+      options: requestOptions,
       cancelToken: cancelToken,
     );
   }

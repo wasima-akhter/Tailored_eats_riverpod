@@ -1,17 +1,29 @@
 import 'package:dio/dio.dart';
+import 'package:flutter/material.dart';
 
 class ApiLogInterceptor extends Interceptor {
   @override
   void onRequest(RequestOptions options, RequestInterceptorHandler handler) {
     assert(() {
-      print(
-        '[API REQUEST] '
-        '${options.method} ${options.uri}',
-      );
+      debugPrint('');
+      debugPrint('══════════════════════════════════════════════════════');
+      debugPrint('🌐 API REQUEST');
+      debugPrint('══════════════════════════════════════════════════════');
+      debugPrint('METHOD : ${options.method}');
+      debugPrint('URL    : ${options.uri}');
+      debugPrint('QUERY  : ${options.queryParameters}');
+      debugPrint('HEADERS: ${options.headers}');
 
       if (!_isSensitiveEndpoint(options.path) && options.data != null) {
-        print('[API BODY] ${options.data}');
+        debugPrint('BODY   : ${options.data}');
       }
+
+      debugPrint('');
+      debugPrint('──────────── REQUEST STACK TRACE ────────────');
+
+      final callerStackTrace = options.extra['callerStackTrace'] as StackTrace?;
+      debugPrint(callerStackTrace.toString());
+      debugPrint('══════════════════════════════════════════════════════');
 
       return true;
     }());
@@ -22,12 +34,16 @@ class ApiLogInterceptor extends Interceptor {
   @override
   void onResponse(Response response, ResponseInterceptorHandler handler) {
     assert(() {
-      print(
-        '[API RESPONSE] '
-        '${response.statusCode} '
-        '${response.requestOptions.method} '
-        '${response.requestOptions.uri}',
-      );
+      debugPrint('');
+      debugPrint('══════════════════════════════════════════════════════');
+      debugPrint('✅ API RESPONSE');
+      debugPrint('══════════════════════════════════════════════════════');
+      debugPrint('STATUS : ${response.statusCode}');
+      debugPrint('METHOD : ${response.requestOptions.method}');
+      debugPrint('URL    : ${response.requestOptions.uri}');
+      debugPrint('HEADERS: ${response.headers}');
+      debugPrint('BODY   : ${response.data}');
+      debugPrint('══════════════════════════════════════════════════════');
 
       return true;
     }());
@@ -38,12 +54,33 @@ class ApiLogInterceptor extends Interceptor {
   @override
   void onError(DioException err, ErrorInterceptorHandler handler) {
     assert(() {
-      print(
-        '[API ERROR] '
-        '${err.response?.statusCode} '
-        '${err.requestOptions.method} '
-        '${err.requestOptions.uri}',
-      );
+      debugPrint('');
+      debugPrint('══════════════════════════════════════════════════════');
+      debugPrint('❌ API ERROR');
+      debugPrint('══════════════════════════════════════════════════════');
+
+      debugPrint('STATUS : ${err.response?.statusCode}');
+      debugPrint('TYPE   : ${err.type}');
+      debugPrint('METHOD : ${err.requestOptions.method}');
+      debugPrint('URL    : ${err.requestOptions.uri}');
+      debugPrint('MESSAGE: ${err.message}');
+
+      debugPrint('');
+      debugPrint('──────────── REQUEST ────────────');
+      debugPrint('QUERY  : ${err.requestOptions.queryParameters}');
+      debugPrint('HEADERS: ${err.requestOptions.headers}');
+      debugPrint('BODY   : ${err.requestOptions.data}');
+
+      debugPrint('');
+      debugPrint('──────────── RESPONSE ────────────');
+      debugPrint('HEADERS: ${err.response?.headers}');
+      debugPrint('BODY   : ${err.response?.data}');
+
+      debugPrint('');
+      debugPrint('──────────── STACK TRACE ────────────');
+      debugPrint(err.stackTrace.toString());
+
+      debugPrint('══════════════════════════════════════════════════════');
 
       return true;
     }());

@@ -44,7 +44,7 @@ class ForgotPasswordController extends Notifier<ForgotPasswordState> {
       state = ForgotPasswordState(
         status: ForgotPasswordStatus.error,
         email: email,
-        errorMessage: error.toString(),
+        errorMessage: "Failed the following task, Please try again",
       );
     }
   }
@@ -70,12 +70,13 @@ class ForgotPasswordController extends Notifier<ForgotPasswordState> {
       state = ForgotPasswordState(
         status: ForgotPasswordStatus.error,
         email: email,
-        errorMessage: error.toString(),
+        errorMessage: "Failed the following task, Please try again",
       );
     }
   }
 
   Future<void> resetPassword({
+    required String email,
     required String token,
     required String newPassword,
     required String confirmPassword,
@@ -88,6 +89,7 @@ class ForgotPasswordController extends Notifier<ForgotPasswordState> {
 
     try {
       await _resetPassword(
+        email: email,
         token: token,
         newPassword: newPassword,
         confirmPassword: confirmPassword,
@@ -102,7 +104,7 @@ class ForgotPasswordController extends Notifier<ForgotPasswordState> {
         status: ForgotPasswordStatus.error,
         email: state.email,
         activationToken: token,
-        errorMessage: error.toString(),
+        errorMessage: "Failed the following task, Please try again",
       );
     }
   }
