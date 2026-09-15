@@ -66,5 +66,8 @@
 		<string>UIInterfaceOrientationLandscapeLeft</string>
 		<string>UIInterfaceOrientationLandscapeRight</string>
 	</array>
+
+	<key>NSPhotoLibraryUsageDescription</key>
+  <string>We need access to your photo library so you can upload progress images.</string>
 </dict>
 </plist>

@@ -4,6 +4,9 @@ import 'package:go_router/go_router.dart';
 import 'package:tailored_eats_riverpod/features/consistency/presentation/screens/consistency_screen.dart';
 import 'package:tailored_eats_riverpod/features/friends/presentation/screens/friends_screen.dart';
 import 'package:tailored_eats_riverpod/features/goals/presentation/screens/goals_screen.dart';
+import 'package:tailored_eats_riverpod/features/profile/presentation/screens/complete_profile_screen.dart';
+import 'package:tailored_eats_riverpod/features/profile/presentation/screens/profile_screen.dart';
+import 'package:tailored_eats_riverpod/features/profile/presentation/screens/update_profile_screen.dart';
 
 import '../../features/authentication/presentation/controllers/auth_controller.dart';
 import '../../features/authentication/presentation/controllers/auth_state.dart';
@@ -13,8 +16,15 @@ import '../../features/authentication/presentation/screens/forgot_password_scree
 import '../../features/authentication/presentation/screens/login_screen.dart';
 import '../../features/authentication/presentation/screens/register_screen.dart';
 import '../../features/authentication/presentation/screens/reset_password_screen.dart';
+import '../../features/calorie_tracking/presentation/screens/calorie_tracking_screen.dart';
+import '../../features/custom_meals/domain/entities/custom_meal.dart';
+import '../../features/custom_meals/presentation/screens/add_custom_meal_screen.dart';
+import '../../features/custom_meals/presentation/screens/custom_meal_details_screen.dart';
+import '../../features/custom_meals/presentation/screens/custom_meals_screen.dart';
+import '../../features/custom_meals/presentation/screens/edit_custom_meal_screen.dart';
 import '../../features/entry/onboarding/presentation/screens/onboarding_screen.dart';
 import '../../features/entry/splash/presentation/screens/splash_screen.dart';
+import '../../features/friends/presentation/screens/friend_detail_screen.dart';
 import '../../features/home/presentation/screens/home_screen.dart';
 import '../../features/navigation/presentation/screens/main_navigation_screen.dart';
 import '../../features/nutrition/presentation/screens/nutrition_screen.dart';
@@ -64,6 +74,7 @@ GoRouter createAppRouter(Ref ref) {
         if (isAuthRoute ||
             isPasswordResetRoute ||
             isEmailVerificationRoute ||
+            location == AppRoutes.completeProfile ||
             location == AppRoutes.onboarding) {
           return null;
         }
@@ -77,7 +88,6 @@ GoRouter createAppRouter(Ref ref) {
             isEmailVerificationRoute ||
             location == AppRoutes.onboarding ||
             isSplashRoute) {
-          // return AppRoutes.main;
           return AppRoutes.home;
         }
       }
@@ -252,11 +262,95 @@ GoRouter createAppRouter(Ref ref) {
         ],
       ),
 
+      // ------  INDIVIDUAL SCREENS ------ //
       GoRoute(
         path: AppRoutes.profile,
         name: AppRoutes.profile,
         builder: (context, state) {
-          return const Placeholder();
+          return const ProfileScreen();
+        },
+      ),
+      GoRoute(
+        path: AppRoutes.completeProfile,
+        name: AppRoutes.completeProfile,
+        builder: (context, state) {
+          return const CompleteProfileScreen();
+        },
+      ),
+      GoRoute(
+        path: AppRoutes.updateProfile,
+        name: AppRoutes.updateProfile,
+        builder: (context, state) {
+          return const UpdateProfileScreen();
+        },
+      ),
+
+      GoRoute(
+        path: AppRoutes.friendDetail,
+        name: AppRoutes.friendDetail,
+        builder: (context, state) {
+          final userId = state.pathParameters['userId'];
+
+          if (userId == null || userId.isEmpty) {
+            return const FriendsScreen();
+          }
+
+          return FriendDetailScreen(userId: userId);
+        },
+      ),
+
+      //
+      // Add these routes inside `routes: [...]`,
+      // before the StatefulShellRoute or after it.
+      GoRoute(
+        path: AppRoutes.customMeals,
+        name: AppRoutes.customMeals,
+        builder: (context, state) {
+          return const CustomMealsScreen();
+        },
+      ),
+
+      GoRoute(
+        path: AppRoutes.addCustomMeal,
+        name: AppRoutes.addCustomMeal,
+        builder: (context, state) {
+          return const AddCustomMealScreen();
+        },
+      ),
+
+      GoRoute(
+        path: AppRoutes.customMealDetails,
+        name: AppRoutes.customMealDetails,
+        builder: (context, state) {
+          final meal = state.extra;
+
+          if (meal is! CustomMeal) {
+            return const CustomMealsScreen();
+          }
+
+          return CustomMealDetailsScreen(meal: meal);
+        },
+      ),
+
+      GoRoute(
+        path: AppRoutes.editCustomMeal,
+        name: AppRoutes.editCustomMeal,
+        builder: (context, state) {
+          final meal = state.extra;
+
+          if (meal is! CustomMeal) {
+            return const CustomMealsScreen();
+          }
+
+          return EditCustomMealScreen(meal: meal);
+        },
+      ),
+
+      GoRoute(
+        path: AppRoutes.calorieTracking,
+        name: AppRoutes.calorieTracking,
+        builder: (context, state) {
+          return const CalorieTrackingScreen();
         },
       ),
     ],

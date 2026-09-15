@@ -1,6 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:go_router/go_router.dart';
 
+import '../../../../app/router/route_paths.dart';
+import '../../../authentication/presentation/controllers/auth_controller.dart';
 import '../controllers/home_state.dart';
 import '../providers/home_provider.dart';
 import '../widgets/calories_remaining.dart';
@@ -30,14 +33,51 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
     });
   }
 
+  Future<void> _logout() async {
+    final confirmed = await showDialog<bool>(
+      context: context,
+      builder: (context) {
+        return AlertDialog(
+          title: const Text('Logout'),
+          content: const Text('Are you sure you want to logout?'),
+          actions: [
+            TextButton(
+              onPressed: () {
+                Navigator.of(context).pop(false);
+              },
+              child: const Text('Cancel'),
+            ),
+            FilledButton(
+              onPressed: () {
+                Navigator.of(context).pop(true);
+              },
+              child: const Text('Logout'),
+            ),
+          ],
+        );
+      },
+    );
+
+    if (confirmed != true || !mounted) {
+      return;
+    }
+
+    await ref.read(authControllerProvider.notifier).logout();
+  }
+
   @override
   Widget build(BuildContext context) {
     final state = ref.watch(homeControllerProvider);
 
     return Scaffold(
-      appBar: const PreferredSize(
-        preferredSize: Size.fromHeight(kToolbarHeight),
-        child: HomeAppBarWidget(),
+      appBar: PreferredSize(
+        preferredSize: const Size.fromHeight(kToolbarHeight),
+        child: HomeAppBarWidget(
+          onLogout: _logout,
+          onProfile: () {
+            context.pushNamed(AppRoutes.profile);
+          },
+        ),
       ),
       body: SafeArea(
         child: RefreshIndicator(
@@ -51,10 +91,10 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
   }
 
   Widget _buildBody(HomeState state) {
-    if (state.isLoading && state.profile == null) {
+    if (state.isLoading && !state.hasAnyContent) {
       return ListView(
-        physics: AlwaysScrollableScrollPhysics(),
-        children: [
+        physics: const AlwaysScrollableScrollPhysics(),
+        children: const [
           SizedBox(
             height: 500,
             child: Center(child: CircularProgressIndicator()),
@@ -63,20 +103,24 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
       );
     }
 
-    if (state.errorMessage != null &&
-        state.profile == null &&
-        state.consistency == null) {
-      return _buildErrorState(state.errorMessage!);
+    if (_hasFullPageError(state)) {
+      return _buildFullPageError(state);
     }
 
     return ListView(
       physics: const AlwaysScrollableScrollPhysics(),
       padding: const EdgeInsets.symmetric(horizontal: 16),
       children: [
-        TopTextHeaderWidget(profile: state.profile),
+        _buildProfileSection(state),
 
         const SizedBox(height: 20),
 
+        ElevatedButton(
+          onPressed: () {
+            context.pushNamed(AppRoutes.completeProfile);
+          },
+          child: Text("Completed Profile"),
+        ),
         const Text(
           'Your Total Daily Nutrition',
           style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
@@ -84,11 +128,18 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
 
         const SizedBox(height: 12),
 
-        NutrientCardWidget(profile: state.profile),
-
-        const SizedBox(height: 15),
-
-        CaloriesRemainingWidget(profile: state.profile),
+        if (state.profileError != null)
+          _buildSectionError(
+            message: state.profileError!,
+            onRetry: () {
+              ref.read(homeControllerProvider.notifier).loadHome();
+            },
+          )
+        else ...[
+          NutrientCardWidget(profile: state.profile),
+          const SizedBox(height: 15),
+          CaloriesRemainingWidget(profile: state.profile),
+        ],
 
         const SizedBox(height: 28),
 
@@ -101,7 +152,9 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
         const SizedBox(height: 15),
 
         CircularProgressWidget(
-          percentage: state.consistency?.todayCompleted.percentage ?? 0,
+          percentage: state.consistencyError != null
+              ? null
+              : state.consistency?.todayCompleted.percentage,
         ),
 
         const SizedBox(height: 25),
@@ -113,7 +166,11 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
 
         const SizedBox(height: 12),
 
-        SelfConsistencyWidget(consistency: state.consistency),
+        SelfConsistencyWidget(
+          consistency: state.consistencyError != null
+              ? null
+              : state.consistency,
+        ),
 
         const SizedBox(height: 20),
 
@@ -125,28 +182,13 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
         const SizedBox(height: 12),
 
         FriendsProgressWidget(
-          friends: state.consistency?.friendsData ?? const [],
+          friends: state.consistencyError != null
+              ? const []
+              : state.consistency?.friendsData ?? const [],
         ),
+        const SizedBox(height: 25),
 
-        if (state.goals.isNotEmpty) ...[
-          const SizedBox(height: 25),
-
-          const Text(
-            "Don't Forget Your Daily Goal",
-            style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
-          ),
-
-          const SizedBox(height: 12),
-
-          TaskListWidget(
-            goals: state.goals,
-            onGoalCompleted: (goalId) {
-              return ref
-                  .read(homeControllerProvider.notifier)
-                  .markGoalCompleted(goalId: goalId);
-            },
-          ),
-        ],
+        _buildGoalsSection(state),
 
         const SizedBox(height: 25),
 
@@ -157,23 +199,102 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
 
         const SizedBox(height: 12),
 
-        WeightWidget(
-          currentWeight: state.profile?.weight.first.weightKg ?? 0.0,
-          isLoading: state.isSavingWeight,
-          onSave: (weight) {
-            return ref
-                .read(homeControllerProvider.notifier)
-                .saveWeight(weight: weight);
-          },
-        ),
+        if (state.profileError != null)
+          _buildSectionError(
+            message: state.profileError!,
+            onRetry: () {
+              ref.read(homeControllerProvider.notifier).loadHome();
+            },
+          )
+        else
+          WeightWidget(
+            currentWeight: state.profile?.weight.isNotEmpty == true
+                ? state.profile!.weight.first.weightKg
+                : 0.0,
+            isLoading: state.isSavingWeight,
+            onSave: (weight) {
+              return ref
+                  .read(homeControllerProvider.notifier)
+                  .saveWeight(weight: weight);
+            },
+          ),
 
         const SizedBox(height: 30),
       ],
     );
   }
 
-  Widget _buildErrorState(String message) {
-    debugPrint('error message: $message');
+  Widget _buildProfileSection(HomeState state) {
+    if (state.profileError != null) {
+      return _buildSectionError(
+        message: state.profileError!,
+        onRetry: () {
+          ref.read(homeControllerProvider.notifier).loadHome();
+        },
+      );
+    }
+
+    return TopTextHeaderWidget(profile: state.profile);
+  }
+
+  Widget _buildGoalsSection(HomeState state) {
+    if (state.goalsError != null) {
+      return Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          const Text(
+            "Don't Forget Your Daily Goal",
+            style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+          ),
+          const SizedBox(height: 12),
+          _buildSectionError(
+            message: state.goalsError!,
+            onRetry: () {
+              ref.read(homeControllerProvider.notifier).loadHome();
+            },
+          ),
+        ],
+      );
+    }
+
+    if (state.goals.isEmpty) {
+      return const SizedBox.shrink();
+    }
+
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        const Text(
+          "Don't Forget Your Daily Goal",
+          style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+        ),
+        const SizedBox(height: 12),
+        TaskListWidget(
+          goals: state.goals,
+          onGoalCompleted: (goalId) {
+            return ref
+                .read(homeControllerProvider.notifier)
+                .markGoalCompleted(goalId: goalId);
+          },
+        ),
+      ],
+    );
+  }
+
+  bool _hasFullPageError(HomeState state) {
+    return !state.hasAnyContent &&
+        state.profileError != null &&
+        state.consistencyError != null &&
+        state.goalsError != null;
+  }
+
+  Widget _buildFullPageError(HomeState state) {
+    final messages = <String>[
+      if (state.profileError != null) state.profileError!,
+      if (state.consistencyError != null) state.consistencyError!,
+      if (state.goalsError != null) state.goalsError!,
+    ];
+
     return ListView(
       physics: const AlwaysScrollableScrollPhysics(),
       children: [
@@ -185,15 +306,16 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
               child: Column(
                 mainAxisSize: MainAxisSize.min,
                 children: [
-                  const Icon(Icons.error_outline, size: 48),
-                  const SizedBox(height: 12),
+                  const Icon(Icons.cloud_off_outlined, size: 52),
+                  const SizedBox(height: 16),
                   const Text(
                     'Unable to load Home',
-                    style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+                    textAlign: TextAlign.center,
+                    style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
                   ),
-                  const SizedBox(height: 8),
-                  Text(message, textAlign: TextAlign.center),
-                  const SizedBox(height: 16),
+                  const SizedBox(height: 10),
+                  Text(messages.join('\n'), textAlign: TextAlign.center),
+                  const SizedBox(height: 20),
                   ElevatedButton(
                     onPressed: () {
                       ref.read(homeControllerProvider.notifier).loadHome();
@@ -206,6 +328,35 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
           ),
         ),
       ],
+    );
+  }
+
+  Widget _buildSectionError({
+    required String message,
+    required VoidCallback onRetry,
+  }) {
+    return Container(
+      width: double.infinity,
+      padding: const EdgeInsets.all(16),
+      decoration: BoxDecoration(
+        borderRadius: BorderRadius.circular(12),
+        border: Border.all(color: Colors.grey.shade300),
+      ),
+      child: Column(
+        children: [
+          const Icon(Icons.cloud_off_outlined, size: 32),
+          const SizedBox(height: 8),
+          const Text(
+            'Unable to load this section',
+            textAlign: TextAlign.center,
+            style: TextStyle(fontWeight: FontWeight.w600),
+          ),
+          const SizedBox(height: 4),
+          Text(message, textAlign: TextAlign.center),
+          const SizedBox(height: 10),
+          TextButton(onPressed: onRetry, child: const Text('Try Again')),
+        ],
+      ),
     );
   }
 }

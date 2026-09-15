@@ -1,8 +1,7 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
-import '../../domain/entities/home_consistency.dart';
+import '../../../../core/errors/error_handler.dart';
 import '../../domain/entities/home_goal.dart';
-import '../../domain/entities/home_profile.dart';
 import '../../domain/usecases/add_user_weight.dart';
 import '../../domain/usecases/get_home_consistency.dart';
 import '../../domain/usecases/get_home_goals.dart';
@@ -30,60 +29,79 @@ class HomeController extends Notifier<HomeState> {
   }
 
   Future<void> loadHome() async {
-    state = state.copyWith(isLoading: true, clearError: true);
+    state = state.copyWith(
+      isLoading: true,
+      clearProfileError: true,
+      clearConsistencyError: true,
+      clearGoalsError: true,
+      clearActionError: true,
+    );
 
+    await Future.wait([_loadProfile(), _loadConsistency(), _loadGoals()]);
+
+    state = state.copyWith(isLoading: false);
+  }
+
+  Future<void> _loadProfile() async {
     try {
-      final results = await Future.wait([
-        _getHomeProfile(),
-        _getHomeConsistency(),
-        _getHomeGoals(),
-      ]);
+      final profile = await _getHomeProfile();
+
+      state = state.copyWith(profile: profile, clearProfileError: true);
+    } catch (error) {
+      state = state.copyWith(profileError: ErrorHandler.message(error));
+    }
+  }
+
+  Future<void> _loadConsistency() async {
+    try {
+      final consistency = await _getHomeConsistency();
 
       state = state.copyWith(
-        isLoading: false,
-        profile: results[0] as HomeProfile,
-        consistency: results[1] as HomeConsistency,
-        goals: results[2] as List<HomeGoal>,
-        clearError: true,
+        consistency: consistency,
+        clearConsistencyError: true,
       );
-    } catch (e) {
-      state = state.copyWith(isLoading: false, errorMessage: e.toString());
+    } catch (error) {
+      state = state.copyWith(consistencyError: ErrorHandler.message(error));
+    }
+  }
+
+  Future<void> _loadGoals() async {
+    try {
+      final goals = await _getHomeGoals();
+
+      state = state.copyWith(goals: goals, clearGoalsError: true);
+    } catch (error) {
+      state = state.copyWith(goalsError: ErrorHandler.message(error));
     }
   }
 
   Future<void> refreshHome() async {
-    state = state.copyWith(isRefreshing: true, clearError: true);
+    state = state.copyWith(
+      isRefreshing: true,
+      clearProfileError: true,
+      clearConsistencyError: true,
+      clearGoalsError: true,
+    );
 
-    try {
-      final results = await Future.wait([
-        _getHomeProfile(),
-        _getHomeConsistency(),
-        _getHomeGoals(),
-      ]);
+    await Future.wait([_loadProfile(), _loadConsistency(), _loadGoals()]);
 
-      state = state.copyWith(
-        isRefreshing: false,
-        profile: results[0] as HomeProfile,
-        consistency: results[1] as HomeConsistency,
-        goals: results[2] as List<HomeGoal>,
-        clearError: true,
-      );
-    } catch (e) {
-      state = state.copyWith(isRefreshing: false, errorMessage: e.toString());
-    }
+    state = state.copyWith(isRefreshing: false);
   }
 
   Future<bool> saveWeight({required double weight}) async {
-    state = state.copyWith(isSavingWeight: true, clearError: true);
+    state = state.copyWith(isSavingWeight: true, clearActionError: true);
 
     try {
       await _addUserWeight(weight: weight);
 
-      state = state.copyWith(isSavingWeight: false, clearError: true);
+      state = state.copyWith(isSavingWeight: false, clearActionError: true);
 
       return true;
-    } catch (e) {
-      state = state.copyWith(isSavingWeight: false, errorMessage: e.toString());
+    } catch (error) {
+      state = state.copyWith(
+        isSavingWeight: false,
+        actionError: ErrorHandler.message(error),
+      );
 
       return false;
     }
@@ -106,11 +124,11 @@ class HomeController extends Notifier<HomeState> {
         return goal;
       }).toList();
 
-      state = state.copyWith(goals: updatedGoals, clearError: true);
+      state = state.copyWith(goals: updatedGoals, clearActionError: true);
 
       return true;
-    } catch (e) {
-      state = state.copyWith(errorMessage: e.toString());
+    } catch (error) {
+      state = state.copyWith(actionError: ErrorHandler.message(error));
 
       return false;
     }

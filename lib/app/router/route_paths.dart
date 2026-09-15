@@ -26,4 +26,17 @@ abstract final class AppRoutes {
   static const friends = '/friends';
 
   static const profile = '/profile';
+  static const completeProfile = '/complete-profile';
+  static const updateProfile = '/update-profile';
+
+  static const friendDetail = '/friend-detail/:userId';
+
+  //
+  // Add to route_paths.dart
+
+  static const customMeals = '/custom-meals';
+  static const addCustomMeal = '/custom-meals/add';
+  static const customMealDetails = '/custom-meals/details';
+  static const editCustomMeal = '/custom-meals/edit';
+  static const calorieTracking = '/calorie-tracking';
 }

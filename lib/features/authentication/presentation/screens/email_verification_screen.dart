@@ -1,7 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
+import 'package:go_router/go_router.dart';
 
+import '../../../../app/router/route_paths.dart';
 import '../controllers/email_verification_controller.dart';
 import '../controllers/email_verification_state.dart';
 
@@ -84,6 +86,7 @@ class _EmailVerificationScreenState
         );
 
         // Navigation will be handled later by GoRouter.
+        context.goNamed(AppRoutes.completeProfile);
       }
     });
 

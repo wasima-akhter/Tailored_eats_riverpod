@@ -83,4 +83,7 @@ abstract final class ApiConstants {
   // ==============================
 
   static const String dashboard = '/dashboard';
+
+  static const completeProfile = '/user/complete-profile';
+  static const updateProfile = '/user/update-profile';
 }

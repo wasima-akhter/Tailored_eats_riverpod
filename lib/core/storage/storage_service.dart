@@ -35,6 +35,14 @@ class StorageService {
   }
 
   // ==============================
+  // Logout
+  // ==============================
+
+  Future<void> logout() async {
+    await clearAuthentication();
+  }
+
+  // ==============================
   // Remember Me
   // ==============================
 

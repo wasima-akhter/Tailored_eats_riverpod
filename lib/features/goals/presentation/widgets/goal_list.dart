@@ -8,19 +8,29 @@ class GoalList extends StatelessWidget {
     super.key,
     required this.goals,
     required this.onComplete,
+    required this.onEdit,
+    required this.onDelete,
     this.completingGoalId,
+    this.updatingGoalId,
+    this.deletingGoalId,
   });
 
   final List<Goal> goals;
+
   final ValueChanged<String> onComplete;
+  final ValueChanged<Goal> onEdit;
+  final ValueChanged<String> onDelete;
+
   final String? completingGoalId;
+  final String? updatingGoalId;
+  final String? deletingGoalId;
 
   @override
   Widget build(BuildContext context) {
     if (goals.isEmpty) {
-      return const Center(
-        child: Padding(
-          padding: EdgeInsets.all(24),
+      return const Padding(
+        padding: EdgeInsets.all(24),
+        child: Center(
           child: Text(
             'No goals available right now.',
             textAlign: TextAlign.center,
@@ -29,18 +39,29 @@ class GoalList extends StatelessWidget {
       );
     }
 
-    return ListView.builder(
-      padding: const EdgeInsets.all(16),
-      itemCount: goals.length,
-      itemBuilder: (context, index) {
-        final goal = goals[index];
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Text(
+          'Goals right now:',
 
-        return GoalCard(
-          goal: goal,
-          isCompleting: completingGoalId == goal.id,
-          onComplete: () => onComplete(goal.id),
-        );
-      },
+          style: TextStyle(fontSize: 18, fontWeight: FontWeight.w700),
+        ),
+        const SizedBox(height: 10),
+        Column(
+          children: goals.map((goal) {
+            return GoalCard(
+              goal: goal,
+              isCompleting: completingGoalId == goal.id,
+              isUpdating: updatingGoalId == goal.id,
+              isDeleting: deletingGoalId == goal.id,
+              onComplete: () => onComplete(goal.id),
+              onEdit: () => onEdit(goal),
+              onDelete: () => onDelete(goal.id),
+            );
+          }).toList(),
+        ),
+      ],
     );
   }
 }

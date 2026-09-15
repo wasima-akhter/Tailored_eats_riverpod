@@ -76,8 +76,14 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
         ).showSnackBar(SnackBar(content: Text(next.errorMessage!)));
       }
 
-      if (next.status == AuthStatus.authenticated && next.session != null) {
-        context.pushNamed(AppRoutes.emailVerification);
+      // Registration is successful, but the user is NOT authenticated yet.
+      // Send them to email verification with the registered email.
+      if (previous?.status == AuthStatus.loading &&
+          next.status == AuthStatus.unauthenticated) {
+        context.goNamed(
+          AppRoutes.emailVerification,
+          extra: _emailController.text.trim(),
+        );
       }
     });
 

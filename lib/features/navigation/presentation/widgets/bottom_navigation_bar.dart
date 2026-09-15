@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_screenutil/flutter_screenutil.dart';
 
 class AppBottomNavigationBar extends StatelessWidget {
   const AppBottomNavigationBar({
@@ -15,7 +16,7 @@ class AppBottomNavigationBar extends StatelessWidget {
     final colorScheme = Theme.of(context).colorScheme;
 
     return Container(
-      margin: const EdgeInsets.fromLTRB(12, 0, 12, 12),
+      margin: EdgeInsets.fromLTRB(10.w, 0, 10.w, 12),
       decoration: BoxDecoration(
         color: colorScheme.surface,
         borderRadius: BorderRadius.circular(24),
@@ -40,6 +41,7 @@ class AppBottomNavigationBar extends StatelessWidget {
           backgroundColor: Colors.transparent,
           indicatorColor: colorScheme.primaryContainer,
           labelBehavior: NavigationDestinationLabelBehavior.alwaysShow,
+          labelPadding: EdgeInsets.zero,
           destinations: const [
             NavigationDestination(
               icon: Icon(Icons.home_outlined),

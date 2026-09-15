@@ -14,6 +14,12 @@ class AppConfig {
   final String baseUrl;
   final String aiBaseUrl;
 
+  String get serverBaseUrl {
+    final uri = Uri.parse(baseUrl);
+
+    return '${uri.scheme}://${uri.host}${uri.hasPort ? ':${uri.port}' : ''}';
+  }
+
   static const String _environment = String.fromEnvironment(
     'ENVIRONMENT',
     defaultValue: 'development',

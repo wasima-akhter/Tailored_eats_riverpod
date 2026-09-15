@@ -13,6 +13,12 @@ class NutrientCardWidget extends StatelessWidget {
       return const _EmptyCard(message: 'Nutrition information is unavailable.');
     }
 
+    final homeProfile = profile!;
+
+    final currentWeight = homeProfile.weight.isNotEmpty
+        ? homeProfile.weight.first.weightKg
+        : null;
+
     return Container(
       padding: const EdgeInsets.all(18),
       decoration: BoxDecoration(
@@ -26,25 +32,33 @@ class NutrientCardWidget extends StatelessWidget {
           _InfoRow(
             label: 'Daily Calories',
             value:
-                '${_formatNumber(profile!.calorie?.consumedCalorie ?? 0.0)} kcal',
+                '${_formatNumber(homeProfile.calorie?.consumedCalorie)} kcal',
             icon: Icons.local_fire_department_outlined,
           ),
+
           const SizedBox(height: 14),
+
           _InfoRow(
             label: 'Current Weight',
-            value: '${_formatNumber(profile!.weight.first.weightKg)} kg',
+            value: currentWeight == null
+                ? '--'
+                : '${_formatNumber(currentWeight)} kg',
             icon: Icons.monitor_weight_outlined,
           ),
+
           const SizedBox(height: 14),
+
           _InfoRow(
             label: 'Activity Level',
-            value: _displayValue(profile!.activityLevel),
+            value: _displayValue(homeProfile.activityLevel),
             icon: Icons.directions_run_outlined,
           ),
+
           const SizedBox(height: 14),
+
           _InfoRow(
             label: 'Training',
-            value: _displayValue(profile!.training),
+            value: _displayValue(homeProfile.training),
             icon: Icons.fitness_center_outlined,
           ),
         ],
@@ -53,7 +67,9 @@ class NutrientCardWidget extends StatelessWidget {
   }
 
   String _formatNumber(double? value) {
-    if (value == null) return '--';
+    if (value == null) {
+      return '--';
+    }
 
     if (value == value.roundToDouble()) {
       return value.toInt().toString();
@@ -63,7 +79,7 @@ class NutrientCardWidget extends StatelessWidget {
   }
 
   String _displayValue(String? value) {
-    if (value == null || value.isEmpty) {
+    if (value == null || value.trim().isEmpty) {
       return '--';
     }
 
@@ -84,20 +100,30 @@ class _InfoRow extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final colorScheme = Theme.of(context).colorScheme;
+
     return Row(
       children: [
         Container(
           width: 42,
           height: 42,
           decoration: BoxDecoration(
-            color: Theme.of(context).colorScheme.primary.withValues(alpha: 0.1),
+            color: colorScheme.primary.withValues(alpha: 0.1),
             borderRadius: BorderRadius.circular(12),
           ),
-          child: Icon(icon, color: Theme.of(context).colorScheme.primary),
+          child: Icon(icon, color: colorScheme.primary),
         ),
         const SizedBox(width: 12),
         Expanded(child: Text(label, style: const TextStyle(fontSize: 14))),
-        Text(value, style: const TextStyle(fontWeight: FontWeight.w600)),
+        const SizedBox(width: 8),
+        Flexible(
+          child: Text(
+            value,
+            textAlign: TextAlign.end,
+            overflow: TextOverflow.ellipsis,
+            style: const TextStyle(fontWeight: FontWeight.w600),
+          ),
+        ),
       ],
     );
   }

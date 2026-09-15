@@ -58,16 +58,14 @@ class AuthController extends Notifier<AuthState> {
     state = const AuthState(status: AuthStatus.loading);
 
     try {
-      final AuthSession session = await _registerUser(
+      await _registerUser(
         name: name,
         email: email,
         password: password,
         confirmPassword: confirmPassword,
       );
 
-      await _storageService.saveAccessToken(session.accessToken);
-
-      state = AuthState(status: AuthStatus.authenticated, session: session);
+      state = const AuthState(status: AuthStatus.unauthenticated);
     } catch (error) {
       state = AuthState(
         status: AuthStatus.error,
@@ -77,6 +75,14 @@ class AuthController extends Notifier<AuthState> {
       FocusManager.instance.primaryFocus?.unfocus();
     }
   }
+
+  Future<void> authenticateSession(AuthSession session) async {
+    await _storageService.saveAccessToken(session.accessToken);
+
+    state = AuthState(status: AuthStatus.authenticated, session: session);
+  }
+
+  //
 
   Future<void> logout() async {
     await _storageService.clearAuthentication();

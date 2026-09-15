@@ -1,6 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:go_router/go_router.dart';
 
+import '../../../../app/router/route_paths.dart';
+import '../../../profile/presentation/providers/profile_provider.dart';
 import '../controllers/nutrition_state.dart';
 import '../providers/nutrition_provider.dart';
 import '../widgets/meal_section.dart';
@@ -13,17 +16,75 @@ class NutritionScreen extends ConsumerStatefulWidget {
 }
 
 class _NutritionScreenState extends ConsumerState<NutritionScreen> {
+  bool _nutritionLoaded = false;
+
   @override
   void initState() {
     super.initState();
 
-    Future.microtask(() {
-      ref.read(nutritionControllerProvider.notifier).loadAllMeals();
+    Future.microtask(_initializeNutrition);
+  }
+
+  Future<void> _initializeNutrition() async {
+    final profileController = ref.read(profileControllerProvider.notifier);
+
+    final profileState = ref.read(profileControllerProvider);
+
+    if (profileState.profile == null) {
+      await profileController.loadProfile();
+    }
+
+    if (!mounted) return;
+
+    final userName = ref.read(nutritionUserEmailProvider);
+
+    if (userName == null || userName.isEmpty) {
+      setState(() {
+        _nutritionLoaded = true;
+      });
+      return;
+    }
+
+    await ref.read(nutritionControllerProvider.notifier).loadAllMeals();
+
+    if (!mounted) return;
+
+    setState(() {
+      _nutritionLoaded = true;
     });
   }
 
   @override
   Widget build(BuildContext context) {
+    final profileState = ref.watch(profileControllerProvider);
+
+    if (!_nutritionLoaded) {
+      return const SafeArea(
+        top: false,
+        child: Scaffold(body: Center(child: CircularProgressIndicator())),
+      );
+    }
+
+    final userName = profileState.profile?.name;
+
+    if (userName == null || userName.isEmpty) {
+      return const SafeArea(
+        top: false,
+        child: Scaffold(
+          body: Center(
+            child: Padding(
+              padding: EdgeInsets.all(24),
+              child: Text(
+                'Unable to load your nutrition profile right now.\n\n'
+                'Please try again later.',
+                textAlign: TextAlign.center,
+              ),
+            ),
+          ),
+        ),
+      );
+    }
+
     final state = ref.watch(nutritionControllerProvider);
     final controller = ref.read(nutritionControllerProvider.notifier);
 
@@ -37,6 +98,34 @@ class _NutritionScreenState extends ConsumerState<NutritionScreen> {
             physics: const AlwaysScrollableScrollPhysics(),
             padding: const EdgeInsets.fromLTRB(16, 16, 16, 32),
             children: [
+              // Add these actions to NutritionScreen,
+              // for example below the introductory text.
+              Row(
+                children: [
+                  Expanded(
+                    child: OutlinedButton.icon(
+                      onPressed: () {
+                        context.pushNamed(AppRoutes.customMeals);
+                      },
+                      icon: const Icon(Icons.restaurant_menu),
+                      label: const Text('My Meals'),
+                    ),
+                  ),
+                  const SizedBox(width: 12),
+                  Expanded(
+                    child: OutlinedButton.icon(
+                      onPressed: () {
+                        context.pushNamed(AppRoutes.calorieTracking);
+                      },
+                      icon: const Icon(Icons.local_fire_department),
+                      label: const Text('Calories'),
+                    ),
+                  ),
+                ],
+              ),
+              const SizedBox(height: 24),
+
+              //
               Text(
                 'What would you like to eat?',
                 style: Theme.of(context).textTheme.headlineSmall?.copyWith(

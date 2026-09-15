@@ -2,6 +2,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../../../app/providers/app_providers.dart';
 import '../../data/datasources/auth_remote_data_source.dart';
+import '../../data/repositories/auth_remote_data_sorce_imp.dart';
 import '../../domain/repositories/auth_repository.dart';
 import 'auth_repository_impl.dart';
 

@@ -16,15 +16,20 @@ class NutritionController extends StateNotifier<NutritionState> {
   final String _userId;
 
   Future<void> loadAllMeals() async {
+    if (_userId.isEmpty) {
+      debugPrint('[NutritionController] User profile is not loaded yet.');
+      return;
+    }
+
     await Future.wait([
-      loadMeals(MealType.breakfast),
-      loadMeals(MealType.lunch),
-      loadMeals(MealType.dinner),
-      loadMeals(MealType.snacks),
+      loadMeals(MealType.breakfast, _userId),
+      loadMeals(MealType.lunch, _userId),
+      loadMeals(MealType.dinner, _userId),
+      loadMeals(MealType.snacks, _userId),
     ]);
   }
 
-  Future<void> loadMeals(MealType mealType) async {
+  Future<void> loadMeals(MealType mealType, String userId) async {
     _updateMealState(
       mealType,
       state
@@ -34,7 +39,7 @@ class NutritionController extends StateNotifier<NutritionState> {
 
     try {
       final meals = await _generateMeals(
-        userId: _userId,
+        userId: userId,
         mealType: mealType.value,
         numMeals: 2,
       );
@@ -66,14 +71,7 @@ class NutritionController extends StateNotifier<NutritionState> {
       );
       debugPrintStack(stackTrace: stackTrace);
 
-      // Resolve/classify the error centrally, but never expose its
-      // raw message directly to the UI.
-      final failure = ErrorHandler.handle(error);
-
-      debugPrint(
-        '[NutritionController] ${mealType.value} failure: '
-        '${failure.userMessage}',
-      );
+      ErrorHandler.handle(error);
 
       _updateMealState(
         mealType,
@@ -88,7 +86,7 @@ class NutritionController extends StateNotifier<NutritionState> {
   Future<void> retryMeal(MealType mealType) async {
     _updateMealState(mealType, MealState(status: MealLoadingStatus.initial));
 
-    await loadMeals(mealType);
+    await loadMeals(mealType, _userId);
   }
 
   void selectMeal({required MealType mealType, required Meal meal}) {
